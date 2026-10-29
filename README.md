@@ -1,5 +1,6 @@
-# 🛡️ FinFraud : Production-Grade Multimodal Financial Fraud Detection System
-A modular, production-ready financial fraud detection & multimodal evidence analysis backend featuring FastAPI, Rich CLI, Qdrant Vector DB, EasyOCR, Groq Whisper, and Google Gemini 2.0 Flash / Groq Llama 3.
+# 🛡️ ScamShield: AI-Powered Financial Scam Detection and Risk Analysis
+
+A modular financial scam detection and multimodal evidence analysis system built with FastAPI, a Rich-powered CLI, Qdrant Vector Database, EasyOCR, Groq Whisper, and Google Gemini 2.0 Flash / Groq Llama 3.
 
 ---
 
@@ -8,6 +9,7 @@ A modular, production-ready financial fraud detection & multimodal evidence anal
 **FinFraud** is a production-grade **Multimodal Financial Fraud Detection & Risk Analysis System** built to handle multi-format evidence ingestion (screenshots, audio recordings, chat logs), vector similarity search, and automated LLM risk evaluation.
 
 ### 🌟 Core Features
+
 - **📸 Multimodal Visual Evidence OCR:** Extracts embedded text from suspicious screenshots, fake payment receipts, and crypto trading dashboards using EasyOCR and CLIP embeddings (`clip-ViT-B-32`).
 - **🎙️ Speech-to-Text Audio Transcription:** Converts voice notes, fake customer support calls, and audio recordings to text via Groq Whisper Large v3.
 - **💬 Text & Chat Log Inspection:** Analyzes raw chat logs, phishing emails, and social media transcripts for fraudulent patterns.
@@ -102,6 +104,7 @@ FinFraud uses **Qdrant Vector Database** collections to index multi-tenant scam 
 ```
 
 ### 1. `Scam Genome` Payload Schema
+
 ```json
 {
   "id": 10001,
@@ -123,6 +126,7 @@ Send 0.5 BTC to unlock trading pool...",
 ```
 
 ### 2. `user_history` Long-Term Memory Payload Schema
+
 ```json
 {
   "id": "e4b21b9c-8512-4c21-bdf4-97216a759082",
@@ -143,13 +147,13 @@ Send 0.5 BTC to unlock trading pool...",
 
 ## 🧠 Key System Components & Use Cases
 
-*   **FastAPI Backend Server:** Serves as the core REST API engine (`/analyze_risk/`), routing evidence payloads, processing file buffers, querying vector indices, and invoking LLM reasoning engines.
-*   **EasyOCR & CLIP Vision Pipeline:** Processes uploaded screenshots and images, extracting optical text and generating 512-dimensional CLIP visual vectors padded to match vector schema.
-*   **Groq Whisper Audio Engine:** Transcribes `.mp3`, `.wav`, `.m4a`, and `.ogg` audio recordings in real-time with zero-shot accuracy.
-*   **Qdrant Vector Database:**
-    *   **Scam Genome Collection:** Stores known fraud vectors (Pig Butchering scripts, fake banking dialogs, scam screenshots) for cosine similarity matching.
-    *   **User History Collection:** Persists interaction embeddings and previous risk verdicts to build persistent session memory.
-*   **Multi-LLM Reasoning Dispatcher:** Synthesizes aggregated visual, textual, and audio evidence against retrieved vector context to generate probabilistic risk scores (`High`, `Medium`, `Low`), evidence breakdowns, and actionable safety steps.
+* **FastAPI Backend Server:** Serves as the core REST API engine (`/analyze_risk/`), routing evidence payloads, processing file buffers, querying vector indices, and invoking LLM reasoning engines.
+* **EasyOCR & CLIP Vision Pipeline:** Processes uploaded screenshots and images, extracting optical text and generating 512-dimensional CLIP visual vectors padded to match vector schema.
+* **Groq Whisper Audio Engine:** Transcribes `.mp3`, `.wav`, `.m4a`, and `.ogg` audio recordings in real-time with zero-shot accuracy.
+* **Qdrant Vector Database:**
+  * **Scam Genome Collection:** Stores known fraud vectors (Pig Butchering scripts, fake banking dialogs, scam screenshots) for cosine similarity matching.
+  * **User History Collection:** Persists interaction embeddings and previous risk verdicts to build persistent session memory.
+* **Multi-LLM Reasoning Dispatcher:** Synthesizes aggregated visual, textual, and audio evidence against retrieved vector context to generate probabilistic risk scores (`High`, `Medium`, `Low`), evidence breakdowns, and actionable safety steps.
 
 ---
 
@@ -184,22 +188,26 @@ Fin-Fraud/
 Follow these steps to set up API keys and databases:
 
 ### 1️⃣ Google AI Studio (Gemini Key)
+
 1. Sign in to [Google AI Studio](https://aistudio.google.com/).
 2. Click **Create API Key** and copy the string.
 3. Save it in your `.env` as `GOOGLE_API_KEY`.
 
 ### 2️⃣ Groq Console (Groq Key)
+
 1. Sign in to [Groq Console](https://console.groq.com/keys).
 2. Click **Create API Key** and copy the string (`gsk_...`).
 3. Save it in your `.env` as `GROQ_API_KEY`.
 
 ### 3️⃣ Qdrant Cloud (Vector Database)
+
 1. Sign up on [Qdrant Cloud](https://cloud.qdrant.io/).
 2. Create a **Free Tier Cluster**.
 3. Copy your **Cluster URL** and **API Key**.
 4. Set `USE_CLOUD=True`, `QDRANT_CLOUD_URL`, and `QDRANT_API_KEY` in `.env`.
 
 ### 4️⃣ Local Environment Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/RishavJ7/fin-fraud.git
@@ -226,24 +234,21 @@ Follow this workflow to run the system:
 
 1. **Populate Vector Database:**
    ```bash
-   # Ingest text scam dataset into Qdrant
-   python -m fin_fraud.features --recreate
+    # Ingest text scam dataset into Qdrant
+    python -m fin_fraud.features --recreate
 
-   # Ingest image evidence into Qdrant
-   python -m fin_fraud.ingest_images
+    # Ingest image evidence into Qdrant
+    python -m fin_fraud.ingest_images
    ```
-
 2. **Start FastAPI Backend Server:**
    ```bash
-   uvicorn fin_fraud.main:app --reload --port 8000
+    uvicorn fin_fraud.main:app --reload --port 8000
    ```
-   *Access API documentation at `http://localhost:8000/docs`*
 
+    *Access API documentation at* `http://localhost:8000/docs`
 3. **Run Interactive CLI Application:**
+
    In a separate terminal:
-   ```bash
-   python run_cli.py
-   ```
    - Provide file paths to suspect evidence (images, audio notes, or text logs).
    - Review the detailed Risk Verdict, Database Matches, and Recommended Actions.
 
@@ -293,11 +298,3 @@ graph TD
 5. Open a Pull Request 🎉
 
 ---
-
-## 🧑 Author
-
-**Rishav Raj**
-
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:rishav2004.work@gmail.com)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rishav-raj-ab-/)
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/RishavJ7)
