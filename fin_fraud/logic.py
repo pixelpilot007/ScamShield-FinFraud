@@ -6,7 +6,16 @@ from PIL import Image
 # Load Models (Global Load)
 # Note: Loading model at module level means it loads when imported.
 # Ensure enough memory or handle lazy loading if app scales.
-vision_model = SentenceTransformer('clip-ViT-B-32')
+vision_model = None
+
+def get_vision_model():
+    global vision_model
+    if vision_model is None:
+        vision_model = SentenceTransformer(
+            'clip-ViT-B-32',
+            device='cpu'
+        )
+    return vision_model
 
 client = get_client()
 COLLECTION_NAME = "Scam Genome"
@@ -20,7 +29,7 @@ def analyze_image_risk(image_file):
     try:
         # 1. Image ko Vector mein badlo (512 dims)
         # Note: 'image_file' PIL image honi chahiye
-        vector_512 = vision_model.encode(image_file)
+        vector_512 = get_vision_model().encode(image_file)
 
         # 2. Zero Padding (Hack to match 1024 dims of teammate's DB)
         padding = np.zeros(TARGET_SIZE - len(vector_512))
