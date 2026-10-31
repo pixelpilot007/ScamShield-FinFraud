@@ -175,11 +175,6 @@ The test message contained a routine team meeting confirmation and an agenda rem
 
 The system classified the message as ordinary professional communication without suspicious indicators.
 
-### Final Testing Screenshot
-
-The following screenshot records the successful results of both test cases.
-
-![ScamShield final testing results showing High Risk for the scam message and Low Risk for the normal message](assets/final-testing-results.png)
 
 *These results validate two sample cases only. They do not establish overall detection accuracy or guarantee correct classification of unseen messages.*
 
