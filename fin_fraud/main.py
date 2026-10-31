@@ -1,6 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fin_fraud.config import settings
-from fin_fraud.features import generate_embeddings
 from fin_fraud.llm import extract_text_from_image, analyze_risk_evidence, transcribe_audio
 from fin_fraud.logic import analyze_image_risk
 from PIL import Image
@@ -87,58 +86,14 @@ async def analyze_risk(files: List[UploadFile] = File(...)):
                     inputs_processed += 1
 
         # --- PHASE 2: SEARCH GENOME (Public Database) ---
+        # Disabled on free hosting to reduce memory usage.
         similar_text_cases = []
-        if aggregated_text.strip():
-            search_query = aggregated_text[:2000]
-            embeddings, _ = generate_embeddings([search_query])
-            query_vector = embeddings[0]
+        memory_context = ""
+        query_vector = None
 
-            client = settings.get_qdrant_client()
-
-            # 1. Search Known Scam Genome (Public)
-            search_result = client.query_points(
-                collection_name="Scam Genome",
-                query=query_vector.tolist(),
-                limit=5
-            )
-            for hit in search_result.points:
-                payload = hit.payload or {}
-                # Try multiple common keys for text content
-                raw_text = (
-                    payload.get("original_text") or
-                    payload.get("text") or
-                    payload.get("page_content") or
-                    payload.get("content") or
-                    payload.get("description") or
-                    "No text content available"
-                )
-
-                # specific fix: if it's a list (some embeddings do this), join it
-                if isinstance(raw_text, list):
-                    raw_text = " ".join(str(x) for x in raw_text)
-
-                # Clean up whitespace
-                clean_text = " ".join(str(raw_text).split())
-
-                similar_text_cases.append({
-                    "text_snippet": clean_text[:300],
-                    "risk_label": payload.get("risk_label", "unknown"),
-                    "score": float(hit.score)
-                })
-
-            # 2. LONG-TERM MEMORY: Search User History (Private)
-            history_result = client.query_points(
-                collection_name=HISTORY_COLLECTION,
-                query=query_vector.tolist(),
-                limit=3,
-                score_threshold=0.85 # Only bring back high-confidence matches
-            )
-
-            if history_result.points:
-                memory_context = "PAST USER REPORTS DETECTED:\n"
-                for hit in history_result.points:
-                    prev_verdict = hit.payload.get('verdict_summary', 'No summary')
-                    memory_context += f"- Previously seen on {hit.payload.get('timestamp', 'Unknown date')}. Verdict: {prev_verdict}\n"
+        logger.warning(
+            "Embedding search and user history disabled on free hosting."
+        )
 
         # --- PHASE 3: FINAL REASONING (LLM) ---
         visual_summary = ""
@@ -159,25 +114,8 @@ async def analyze_risk(files: List[UploadFile] = File(...)):
         llm_analysis = analyze_risk_evidence(final_user_content, similar_text_cases)
 
         # --- PHASE 4: PERSIST TO MEMORY ---
-        if aggregated_text.strip():
-            try:
-                import datetime
-                client.upsert(
-                    collection_name=HISTORY_COLLECTION,
-                    points=[models.PointStruct(
-                        id=str(uuid.uuid4()),
-                        vector=query_vector.tolist(),
-                        payload={
-                            "timestamp": datetime.datetime.now().isoformat(),
-                            "original_input": aggregated_text[:500],
-                            "verdict_summary": f"{llm_analysis['risk_level']} Risk ({llm_analysis['probability']*100:.0f}%)",
-                            "recommendations": llm_analysis.get("recommendations", [])
-                        }
-                    )]
-                )
-                logger.info("Interaction saved to Long-term Memory.")
-            except Exception as e:
-                logger.error(f"Memory persistence failed: {e}")
+        # Disabled on free hosting because embeddings are unavailable.
+        logger.info("Long-term memory persistence skipped.")
 
         return {
             "inputs_processed": inputs_processed,
