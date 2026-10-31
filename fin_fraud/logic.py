@@ -1,5 +1,4 @@
 
-client = get_client()
 COLLECTION_NAME = "Scam Genome"
 TARGET_SIZE = 1024
 
