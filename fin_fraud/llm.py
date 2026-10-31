@@ -11,11 +11,16 @@ import easyocr
 # gpu=False can be set if no GPU is available, but let's let it auto-detect or default.
 # For a generic environment, we might want to wrap this in a try-except or lazy load if it's heavy,
 # but the requirement says "Initialize the OCR reader globally".
-try:
-    reader = easyocr.Reader(['en'])
-except Exception as e:
-    logger.error(f"Failed to initialize EasyOCR: {e}")
-    reader = None
+reader = None
+
+def get_ocr_reader():
+    global reader
+
+    if reader is None:
+        logger.info("Initializing EasyOCR...")
+        reader = easyocr.Reader(['en'], gpu=False)
+
+    return reader
 
 def configure_genai():
     if not settings.GOOGLE_API_KEY:
@@ -23,17 +28,12 @@ def configure_genai():
     return genai.Client(api_key=settings.GOOGLE_API_KEY)
 
 def extract_text_from_image(image_bytes: bytes) -> str:
-    """
-    Uses local EasyOCR to extract text from images.
-    """
-    if reader is None:
-        logger.error("EasyOCR reader not initialized.")
-        return ""
-
+    """Extract text from an image using EasyOCR."""
     try:
-        # EasyOCR supports bytes directly!
-        result = reader.readtext(image_bytes, detail=0)
+        ocr_reader = get_ocr_reader()
+        result = ocr_reader.readtext(image_bytes, detail=0)
         return " ".join(result)
+
     except Exception as e:
         logger.error(f"Error in OCR: {e}")
         return ""
