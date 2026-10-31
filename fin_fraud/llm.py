@@ -5,7 +5,7 @@ import io
 import json
 from loguru import logger
 from groq import Groq
-import easyocr
+
 
 # Initialize the reader once to avoid reloading the model on every request
 # gpu=False can be set if no GPU is available, but let's let it auto-detect or default.
@@ -17,11 +17,11 @@ def get_ocr_reader():
     global reader
 
     if reader is None:
+        import easyocr
         logger.info("Initializing EasyOCR...")
         reader = easyocr.Reader(['en'], gpu=False)
 
     return reader
-
 def configure_genai():
     if not settings.GOOGLE_API_KEY:
         raise ValueError("GOOGLE_API_KEY is not set")
