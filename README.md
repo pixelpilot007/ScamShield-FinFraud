@@ -316,12 +316,7 @@ Configure only the services required by the features you intend to enable. Provi
 
 ---
 
-## 📄 License
-
-Add the applicable license and dataset attribution information before distributing the project.
-
----
 
 ## ⚖️ Disclaimer
 
-ScamShield is an educational and demonstration project. Its assessments may be incorrect or incomplete and should not replace professional fraud investigation. Always verify suspicious financial communications through official channels before taking action.
+ScamShield is an educational and demonstration project. Its assessments may be incorrect or incomplete and should not replace professional fraud investigation.
