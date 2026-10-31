@@ -5,9 +5,8 @@ from loguru import logger
 from tqdm import tqdm
 import typer
 # import pandas as pd # Not strictly needed if we just use lists
-from sentence_transformers import SentenceTransformer
 from qdrant_client import models
-from datasets import load_dataset
+
 
 # Ensure project root is in path for imports
 PROJ_ROOT = Path(__file__).resolve().parents[1]
@@ -80,9 +79,17 @@ def load_raw_data():
 
     # Process Hugging Face Dataset: BothBosu/multi-agent-scam-conversation
     try:
-        logger.info("Loading Hugging Face dataset: BothBosu/multi-agent-scam-conversation")
-        # Load the dataset (assuming 'train' split if not specified, but explicit is better)
-        hf_dataset = load_dataset("BothBosu/multi-agent-scam-conversation", split="train")
+        from datasets import load_dataset
+        
+        logger.info(
+        "Loading Hugging Face dataset: "
+        "BothBosu/multi-agent-scam-conversation"
+        )
+        
+        hf_dataset = load_dataset(
+        "BothBosu/multi-agent-scam-conversation",
+        split="train"
+        )
 
         for item in hf_dataset:
             # item keys based on image: 'dialogue', 'type', 'labels', 'personality'
@@ -119,18 +126,29 @@ def load_raw_data():
 
     return data
 
-def generate_embeddings(texts, model_name="BAAI/bge-base-en-v1.5", max_seq_length=512, batch_size=32):
-    """
-    Generate embeddings for a list of texts using the specified model.
-    """
+def generate_embeddings(
+    texts,
+    model_name="BAAI/bge-base-en-v1.5",
+    max_seq_length=512,
+    batch_size=8,
+):
+    """Generate embeddings only when explicitly requested."""
+    from sentence_transformers import SentenceTransformer
+
     logger.info(f"Loading embedding model: {model_name}...")
-    model = SentenceTransformer(model_name)
+
+    model = SentenceTransformer(model_name, device="cpu")
     model.max_seq_length = max_seq_length
-    logger.info(f"Model sequence length set to: {max_seq_length}")
+
     logger.info(f"Model loaded on device: {model.device}")
 
-    logger.info(f"Generating embeddings (Batch Size: {batch_size})...")
-    embeddings = model.encode(texts, show_progress_bar=True, batch_size=batch_size)
+    embeddings = model.encode(
+        texts,
+        show_progress_bar=False,
+        batch_size=batch_size,
+        convert_to_numpy=True,
+    )
+
     return embeddings, model.get_sentence_embedding_dimension()
 
 @app.command()
